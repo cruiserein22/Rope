@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rope Web Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .preview-container { position: relative; width: 100%; max-width: 800px; margin: 0 auto; }
+        .preview-frame { width: 100%; height: auto; }
+        .controls { margin-top: 20px; }
+        .parameter-group { margin: 10px 0; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Rope Web Interface</h1>
+        
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="preview-container mb-4">
+                    <img id="preview" class="preview-frame" src="/api/get_frame" alt="Preview">
+                </div>
+
+                <div class="controls">
+                    <div class="input-group mb-3">
+                        <input type="file" class="form-control" id="videoInput" accept="video/*">
+                        <button class="btn btn-primary" onclick="loadVideo()">Load Video</button>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <input type="file" class="form-control" id="imageInput" accept="image/*">
+                        <button class="btn btn-primary" onclick="loadImage()">Load Image</button>
+                    </div>
+
+                    <div class="btn-group w-100 mb-3">
+                        <button class="btn btn-success" onclick="playVideo(true)">Play</button>
+                        <button class="btn btn-danger" onclick="playVideo(false)">Stop</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            preview.src = `/api/get_frame?t=${Date.now()}`;
+        }
+
+        setInterval(updatePreview, 1000/30); // 30 FPS update
+
+        async function loadVideo() {
+            const input = document.getElementById('videoInput');
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('video', file);
+
+            try {
+                const response = await fetch('/api/load_target_video', {
+                    method: 'POST',
+                    body: JSON.stringify({ path: file.name }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                console.log(result);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadImage() {
+            const input = document.getElementById('imageInput');
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const response = await fetch('/api/load_target_image', {
+                    method: 'POST',
+                    body: JSON.stringify({ path: file.name }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                console.log(result);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function playVideo(state) {
+            try {
+                const response = await fetch('/api/play_video', {
+                    method: 'POST',
+                    body: JSON.stringify({ state }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await response.json();
+                console.log(result);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html> 
